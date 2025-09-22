@@ -28,20 +28,44 @@ export async function createInternship(req, res) {
       externalMentorId,
       internalMentorId,
     } = req.body;
+    const parsedDuration = parseInt(duration);
+    const parsedStipend = parseFloat(stipend);
+    const parsedCompanyId = parseInt(CompanyId);
+    const parsedExternalMentorId = parseInt(externalMentorId);
+    const parsedInternalMentorId = parseInt(internalMentorId);
+    const normalizedPPO =
+      typeof PPO === "string" ? PPO.toLowerCase() === "true" : Boolean(PPO);
+
+    if (
+      !title ||
+      !description ||
+      !academicYear ||
+      Number.isNaN(parsedDuration) ||
+      !mode ||
+      Number.isNaN(parsedStipend) ||
+      !CompletionCertificate ||
+      Number.isNaN(parsedCompanyId) ||
+      Number.isNaN(parsedExternalMentorId) ||
+      Number.isNaN(parsedInternalMentorId)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Missing or invalid required fields" });
+    }
     const internship = await prisma.internship.create({
       data: {
         title,
         description,
         academicYear,
-        duration,
+        duration: parsedDuration,
         mode,
-        stipend,
-        PPO: Boolean(PPO),
+        stipend: parsedStipend,
+        PPO: normalizedPPO,
         CompletionCertificate,
         Remarks,
-        CompanyId,
-        externalMentorId,
-        internalMentorId,
+        CompanyId: parsedCompanyId,
+        externalMentorId: parsedExternalMentorId,
+        internalMentorId: parsedInternalMentorId,
       },
     });
     res.status(201).json(internship);
@@ -53,7 +77,13 @@ export async function createInternship(req, res) {
 
 export async function enrollStudent(req, res) {
   try {
-    const { studentId, internshipId } = req.body;
+    const studentId = parseInt(req.body.studentId);
+    const internshipId = parseInt(req.body.internshipId);
+    if (Number.isNaN(studentId) || Number.isNaN(internshipId)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid studentId or internshipId" });
+    }
     const record = await prisma.studentInternship.create({
       data: { studentId, internshipId },
     });
@@ -66,6 +96,9 @@ export async function enrollStudent(req, res) {
 export async function updateInternship(req, res) {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
     const {
       title,
       description,
@@ -80,38 +113,52 @@ export async function updateInternship(req, res) {
       externalMentorId,
       internalMentorId,
     } = req.body;
+    const parsedDuration = parseInt(duration);
+    const parsedStipend = parseFloat(stipend);
+    const parsedCompanyId = parseInt(CompanyId);
+    const parsedExternalMentorId = parseInt(externalMentorId);
+    const parsedInternalMentorId = parseInt(internalMentorId);
+
     if (
       !title ||
       !description ||
       !academicYear ||
-      !duration ||
+      Number.isNaN(parsedDuration) ||
       !mode ||
-      !stipend ||
-      !PPO ||
+      Number.isNaN(parsedStipend) ||
       !CompletionCertificate ||
-      !Remarks ||
-      !CompanyId ||
-      !externalMentorId ||
-      !internalMentorId
+      Number.isNaN(parsedCompanyId) ||
+      Number.isNaN(parsedExternalMentorId) ||
+      Number.isNaN(parsedInternalMentorId)
     ) {
-      return res.status(400).json({ error: "All fields are required" });
+      return res
+        .status(400)
+        .json({ error: "Missing or invalid required fields" });
+    }
+
+    const updateData = {
+      title,
+      description,
+      academicYear,
+      duration: parsedDuration,
+      mode,
+      stipend: parsedStipend,
+      CompletionCertificate,
+      CompanyId: parsedCompanyId,
+      externalMentorId: parsedExternalMentorId,
+      internalMentorId: parsedInternalMentorId,
+    };
+
+    if (typeof PPO !== "undefined") {
+      updateData.PPO =
+        typeof PPO === "string" ? PPO.toLowerCase() === "true" : Boolean(PPO);
+    }
+    if (typeof Remarks !== "undefined") {
+      updateData.Remarks = Remarks;
     }
     const internship = await prisma.internship.update({
       where: { id },
-      data: {
-        title,
-        description,
-        academicYear,
-        duration,
-        mode,
-        stipend,
-        PPO,
-        CompletionCertificate,
-        Remarks,
-        CompanyId,
-        externalMentorId,
-        internalMentorId,
-      },
+      data: updateData,
     });
     res.status(200).json(internship);
   } catch (error) {

@@ -46,6 +46,9 @@ export async function createExternalMentor(req, res) {
 export async function updateInternalMentor(req, res) {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
     const { name, email, mobileNo } = req.body;
     if (!name || !email || !mobileNo) {
       return res.status(400).json({ error: "All fields are required" });
@@ -64,6 +67,9 @@ export async function updateInternalMentor(req, res) {
 export async function updateExternalMentor(req, res) {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
     const { name, email, mobileNo } = req.body;
     if (!name || !email || !mobileNo) {
       return res.status(400).json({ error: "All fields are required" });

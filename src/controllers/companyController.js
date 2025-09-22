@@ -31,6 +31,9 @@ export async function createCompany(req, res) {
 export async function updateCompany(req, res) {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
     const { name, address, website } = req.body;
     if (!name || !address || !website) {
       return res

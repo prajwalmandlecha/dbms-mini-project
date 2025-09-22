@@ -24,6 +24,9 @@ export async function createDepartment(req, res) {
 export async function updateDepartment(req, res) {
   try {
     const id = parseInt(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
     const { name } = req.body;
     if (!name) {
       return res.status(400).json({ error: "Name is required" });
