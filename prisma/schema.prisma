@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id Int @id @default(autoincrement())
+  name String @unique
+  students Student[]
+}
+
+model Company {
+  id Int @id @default(autoincrement())
+  name String @unique
+  address String
+  website String
+  internships Internship[]
+}
+
+model InternalMentor {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  mobileNo String
+  internships Internship[]
+}
+
+model ExternalMentor {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  mobileNo String
+  internships Internship[]
+}
+
+model Student {
+  id Int @id @default(autoincrement())
+  rollno String @unique
+  name String
+  year EnggYear
+  div String
+  mobileNo String
+  email String @unique
+  departmentId Int
+  department Department @relation(fields: [departmentId], references: [id])
+  internships StudentInternship[]
+}
+
+model Internship {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  academicYear AcademicYears
+  duration Int // in months
+  mode InternshipMode
+  stipend Float
+  PPO Boolean @default(false)
+  CompletionCertificate String
+  Remarks String?
+  CompanyId Int
+  company Company @relation(fields: [CompanyId], references: [id])
+  externalMentorId Int
+  externalMentor ExternalMentor @relation(fields: [externalMentorId], references: [id])
+  internalMentorId Int
+  internalMentor InternalMentor @relation(fields: [internalMentorId], references: [id])
+  students StudentInternship[]
+}
+
+model StudentInternship {
+  studentId Int
+  internshipId Int
+  student Student @relation(fields: [studentId], references: [id])
+  internship Internship @relation(fields: [internshipId], references: [id])
+  @@id([studentId, internshipId])
+}
+
+enum AcademicYears {
+  YEAR_2023_24
+  YEAR_2024_25
+  YEAR_2025_26
+}
+
+enum InternshipMode {
+  REMOTE
+  ONSITE
+  PART_TIME
+}
+
+enum EnggYear {
+  FE
+  SE
+  TE
+  BE
+}
