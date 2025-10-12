@@ -40,8 +40,12 @@ export async function createInternship(req, res) {
     const parsedDuration = parseInt(duration);
     const parsedStipend = parseFloat(stipend);
     const parsedCompanyId = parseInt(CompanyId);
-    const parsedExternalMentorId = parseInt(externalMentorId);
-    const parsedInternalMentorId = parseInt(internalMentorId);
+    const parsedExternalMentorId = externalMentorId
+      ? parseInt(externalMentorId)
+      : null;
+    const parsedInternalMentorId = internalMentorId
+      ? parseInt(internalMentorId)
+      : null;
     const normalizedPPO =
       typeof PPO === "string" ? PPO.toLowerCase() === "true" : Boolean(PPO);
 
@@ -53,9 +57,7 @@ export async function createInternship(req, res) {
       !mode ||
       Number.isNaN(parsedStipend) ||
       !CompletionCertificate ||
-      Number.isNaN(parsedCompanyId) ||
-      Number.isNaN(parsedExternalMentorId) ||
-      Number.isNaN(parsedInternalMentorId)
+      Number.isNaN(parsedCompanyId)
     ) {
       return res
         .status(400)
@@ -125,8 +127,12 @@ export async function updateInternship(req, res) {
     const parsedDuration = parseInt(duration);
     const parsedStipend = parseFloat(stipend);
     const parsedCompanyId = parseInt(CompanyId);
-    const parsedExternalMentorId = parseInt(externalMentorId);
-    const parsedInternalMentorId = parseInt(internalMentorId);
+    const parsedExternalMentorId = externalMentorId
+      ? parseInt(externalMentorId)
+      : null;
+    const parsedInternalMentorId = internalMentorId
+      ? parseInt(internalMentorId)
+      : null;
 
     if (
       !title ||
@@ -136,9 +142,7 @@ export async function updateInternship(req, res) {
       !mode ||
       Number.isNaN(parsedStipend) ||
       !CompletionCertificate ||
-      Number.isNaN(parsedCompanyId) ||
-      Number.isNaN(parsedExternalMentorId) ||
-      Number.isNaN(parsedInternalMentorId)
+      Number.isNaN(parsedCompanyId)
     ) {
       return res
         .status(400)

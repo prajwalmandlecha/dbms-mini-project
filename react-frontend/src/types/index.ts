@@ -28,7 +28,7 @@ export interface Student {
   id: number;
   rollno: string;
   name: string;
-  year: 'FE' | 'SE' | 'TE' | 'BE';
+  year: "FE" | "SE" | "TE" | "BE";
   div: string;
   mobileNo: string;
   email: string;
@@ -40,18 +40,18 @@ export interface Internship {
   id: number;
   title: string;
   description: string;
-  academicYear: 'YEAR_2023_24' | 'YEAR_2024_25' | 'YEAR_2025_26';
+  academicYear: "YEAR_2023_24" | "YEAR_2024_25" | "YEAR_2025_26";
   duration: number; // in months
-  mode: 'REMOTE' | 'ONSITE' | 'PART_TIME';
+  mode: "REMOTE" | "ONSITE" | "PART_TIME";
   stipend: number;
   PPO: boolean;
   CompletionCertificate: string;
   Remarks?: string;
   CompanyId: number;
   company?: Company;
-  externalMentorId: number;
+  externalMentorId?: number | null;
   externalMentor?: ExternalMentor;
-  internalMentorId: number;
+  internalMentorId?: number | null;
   internalMentor?: InternalMentor;
   students?: StudentInternship[];
 }

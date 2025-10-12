@@ -52,8 +52,8 @@ const InternshipPage: React.FC = () => {
     CompletionCertificate: "",
     Remarks: "",
     CompanyId: 0,
-    externalMentorId: 0,
-    internalMentorId: 0,
+    externalMentorId: null,
+    internalMentorId: null,
     studentId: 0, // Student is required for every internship record
   });
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
@@ -127,8 +127,8 @@ const InternshipPage: React.FC = () => {
       CompletionCertificate: internship.CompletionCertificate,
       Remarks: internship.Remarks || "",
       CompanyId: internship.CompanyId,
-      externalMentorId: internship.externalMentorId || 0,
-      internalMentorId: internship.internalMentorId || 0,
+      externalMentorId: internship.externalMentorId || null,
+      internalMentorId: internship.internalMentorId || null,
       studentId: studentId,
     });
     setEditingId(internship.id);
@@ -151,8 +151,8 @@ const InternshipPage: React.FC = () => {
       CompletionCertificate: "",
       Remarks: "",
       CompanyId: 0,
-      externalMentorId: 0,
-      internalMentorId: 0,
+      externalMentorId: null,
+      internalMentorId: null,
       studentId: 0,
     });
     setQuickAddError(null);
@@ -178,7 +178,9 @@ const InternshipPage: React.FC = () => {
             name === "externalMentorId" ||
             name === "internalMentorId" ||
             name === "studentId"
-          ? parseInt(value, 10)
+          ? value
+            ? parseInt(value, 10)
+            : null
           : value,
     }));
     setQuickAddError(null);
@@ -263,8 +265,8 @@ const InternshipPage: React.FC = () => {
       CompletionCertificate: "",
       Remarks: "",
       CompanyId: 0,
-      externalMentorId: 0,
-      internalMentorId: 0,
+      externalMentorId: null,
+      internalMentorId: null,
       studentId: 0,
     });
     setQuickAddError(null);
@@ -457,10 +459,10 @@ const InternshipPage: React.FC = () => {
                     <th style={{ width: "25%" }}>Company *</th>
                     <th style={{ width: "12%" }}>Certificate *</th>
                     <th colSpan={2} style={{ width: "20%" }}>
-                      Internal Mentor *
+                      Internal Mentor
                     </th>
                     <th colSpan={2} style={{ width: "20%" }}>
-                      External Mentor *
+                      External Mentor
                     </th>
                   </tr>
                 </thead>
@@ -602,7 +604,7 @@ const InternshipPage: React.FC = () => {
                         onChange={(option) => {
                           setQuickAddData({
                             ...quickAddData,
-                            internalMentorId: option?.value || 0,
+                            internalMentorId: option?.value || null,
                           });
                         }}
                         placeholder="None"
@@ -651,7 +653,7 @@ const InternshipPage: React.FC = () => {
                         onChange={(option) => {
                           setQuickAddData({
                             ...quickAddData,
-                            externalMentorId: option?.value || 0,
+                            externalMentorId: option?.value || null,
                           });
                         }}
                         placeholder="None"
@@ -741,11 +743,7 @@ const InternshipPage: React.FC = () => {
                 </tbody>
               </Table>
               <div className="mt-2 text-muted small">
-                <strong>Tip:</strong> Required fields marked with *. Remarks is
-                optional and appears in the last row. Company, Mode, Duration,
-                and Mentors stay selected after adding for faster bulk entry.
-                Use your browser's find feature (Ctrl+F) within dropdowns to
-                search for students/companies.
+                <strong>Tip:</strong> Required fields marked with *.
               </div>
             </Card.Body>
           </Card>
