@@ -3,6 +3,7 @@ import {
   listDepartments,
   createDepartment,
   updateDepartment,
+  deleteDepartment,
 } from "../controllers/departmentController.js";
 
 const router = express.Router();
@@ -10,5 +11,6 @@ const router = express.Router();
 router.get("/", listDepartments);
 router.post("/", createDepartment);
 router.put("/:id", updateDepartment);
+router.delete("/:id", deleteDepartment);
 
 export default router;

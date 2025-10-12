@@ -41,3 +41,19 @@ export async function updateDepartment(req, res) {
     res.status(400).json({ error: "Failed to update department" });
   }
 }
+
+export async function deleteDepartment(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    await prisma.department.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "Department deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete department" });
+  }
+}

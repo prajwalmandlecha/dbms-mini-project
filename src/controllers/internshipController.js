@@ -3,7 +3,16 @@ import { prisma } from "../utils/prisma.js";
 export async function listInternships(req, res) {
   try {
     const internships = await prisma.internship.findMany({
-      include: { company: true, externalMentor: true, internalMentor: true },
+      include: {
+        company: true,
+        externalMentor: true,
+        internalMentor: true,
+        students: {
+          include: {
+            student: true,
+          },
+        },
+      },
     });
     res.json(internships);
   } catch (error) {
@@ -163,5 +172,25 @@ export async function updateInternship(req, res) {
     res.status(200).json(internship);
   } catch (error) {
     res.status(400).json({ error: "Failed to update internship" });
+  }
+}
+
+export async function deleteInternship(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+
+    // remove student-internship links first to satisfy FK constraints
+    await prisma.studentInternship.deleteMany({ where: { internshipId: id } });
+
+    await prisma.internship.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "Internship deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete internship" });
   }
 }

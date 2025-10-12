@@ -84,3 +84,35 @@ export async function updateExternalMentor(req, res) {
     res.status(400).json({ error: "Failed to update external mentor" });
   }
 }
+
+export async function deleteInternalMentor(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    await prisma.internalMentor.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "Internal mentor deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete internal mentor" });
+  }
+}
+
+export async function deleteExternalMentor(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    await prisma.externalMentor.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "External mentor deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete external mentor" });
+  }
+}

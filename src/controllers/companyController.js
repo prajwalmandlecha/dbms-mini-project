@@ -50,3 +50,19 @@ export async function updateCompany(req, res) {
     res.status(400).json({ error: "Failed to update company" });
   }
 }
+
+export async function deleteCompany(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    await prisma.company.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "Company deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete company" });
+  }
+}

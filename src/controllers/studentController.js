@@ -84,3 +84,19 @@ export async function updateStudent(req, res) {
     res.status(400).json({ error: "Failed to update student" });
   }
 }
+
+export async function deleteStudent(req, res) {
+  try {
+    const id = parseInt(req.params?.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+    await prisma.student.delete({
+      where: { id },
+    });
+    res.status(200).json({ message: "Student deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Failed to delete student" });
+  }
+}
