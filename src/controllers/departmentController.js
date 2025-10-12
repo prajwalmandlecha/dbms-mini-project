@@ -13,10 +13,20 @@ export async function listDepartments(req, res) {
 export async function createDepartment(req, res) {
   try {
     const { name } = req.body;
-    const department = await prisma.department.create({ data: { name } });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Department name is required" });
+    }
+    const department = await prisma.department.create({
+      data: { name: name.trim() },
+    });
     res.status(201).json(department);
   } catch (error) {
     console.error(error);
+    if (error.code === "P2002") {
+      return res
+        .status(400)
+        .json({ error: "A department with this name already exists" });
+    }
     res.status(400).json({ error: "Failed to create department" });
   }
 }

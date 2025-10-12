@@ -69,10 +69,10 @@ model Internship {
   Remarks String?
   CompanyId Int
   company Company @relation(fields: [CompanyId], references: [id])
-  externalMentorId Int
-  externalMentor ExternalMentor @relation(fields: [externalMentorId], references: [id])
-  internalMentorId Int
-  internalMentor InternalMentor @relation(fields: [internalMentorId], references: [id])
+  externalMentorId Int?
+  externalMentor ExternalMentor? @relation(fields: [externalMentorId], references: [id])
+  internalMentorId Int?
+  internalMentor InternalMentor? @relation(fields: [internalMentorId], references: [id])
   students StudentInternship[]
 }
 

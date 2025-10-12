@@ -84,7 +84,7 @@ const DepartmentPage: React.FC = () => {
   };
 
   const handleQuickAdd = async () => {
-    if (!quickAddData.name) {
+    if (!quickAddData.name.trim()) {
       setQuickAddError("Please enter department name");
       return;
     }
@@ -95,8 +95,8 @@ const DepartmentPage: React.FC = () => {
         await fetchDepartments();
         handleCancelEdit();
       } else {
-        const response = await departmentService.create(quickAddData);
-        setDepartments([...departments, response.data]);
+        await departmentService.create(quickAddData);
+        await fetchDepartments(); // Refresh the list to ensure consistency
         setQuickAddData({ name: "" });
 
         // Auto-focus first field
@@ -105,10 +105,13 @@ const DepartmentPage: React.FC = () => {
         if (firstInput) firstInput.focus();
       }
       setQuickAddError(null);
-    } catch (err) {
-      setQuickAddError(
-        editingId ? "Failed to update department" : "Failed to add department"
-      );
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.error ||
+        (editingId
+          ? "Failed to update department"
+          : "Failed to add department");
+      setQuickAddError(errorMessage);
       console.error(err);
     }
   };
