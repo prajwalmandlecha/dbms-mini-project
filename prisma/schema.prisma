@@ -23,7 +23,7 @@ model Company {
   id Int @id @default(autoincrement())
   name String @unique
   address String
-  website String
+  website String?
   internships Internship[]
 }
 

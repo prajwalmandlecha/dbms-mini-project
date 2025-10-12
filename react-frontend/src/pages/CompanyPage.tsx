@@ -90,8 +90,8 @@ const CompanyPage: React.FC = () => {
   };
 
   const handleQuickAdd = async () => {
-    if (!quickAddData.name || !quickAddData.address || !quickAddData.website) {
-      setQuickAddError("Please fill all required fields");
+    if (!quickAddData.name || !quickAddData.address) {
+      setQuickAddError("Please fill Name and Address");
       return;
     }
 
@@ -101,8 +101,8 @@ const CompanyPage: React.FC = () => {
         await fetchCompanies();
         handleCancelEdit();
       } else {
-        const response = await companyService.create(quickAddData);
-        setCompanies([...companies, response.data]);
+        await companyService.create(quickAddData);
+        await fetchCompanies(); // Refresh the list to ensure consistency
         setQuickAddData({ name: "", address: "", website: "" });
 
         // Auto-focus first field
@@ -111,10 +111,11 @@ const CompanyPage: React.FC = () => {
         if (firstInput) firstInput.focus();
       }
       setQuickAddError(null);
-    } catch (err) {
-      setQuickAddError(
-        editingId ? "Failed to update company" : "Failed to add company"
-      );
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.error ||
+        (editingId ? "Failed to update company" : "Failed to add company");
+      setQuickAddError(errorMessage);
       console.error(err);
     }
   };
@@ -168,7 +169,7 @@ const CompanyPage: React.FC = () => {
                   <tr>
                     <th style={{ width: "25%" }}>Company Name *</th>
                     <th style={{ width: "35%" }}>Address *</th>
-                    <th style={{ width: "30%" }}>Website *</th>
+                    <th style={{ width: "30%" }}>Website</th>
                     <th style={{ width: "10%" }}>Action</th>
                   </tr>
                 </thead>
