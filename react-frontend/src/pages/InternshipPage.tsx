@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import { ArrowRepeat, CheckCircle, XCircle } from "react-bootstrap-icons";
 import Select from "react-select";
-import DataList from "../components/DataList";
+import DataList, { DataListColumn } from "../components/DataList";
 import {
   Internship,
   Company,
@@ -34,6 +34,25 @@ const InternshipPage: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [filterYear, setFilterYear] = useState<
+    "YEAR_2023_24" | "YEAR_2024_25" | "YEAR_2025_26" | ""
+  >("");
+  const [filterCompany, setFilterCompany] = useState<number | "">("");
+  const [filterMode, setFilterMode] = useState<
+    "REMOTE" | "ONSITE" | "PART_TIME" | ""
+  >("");
+  const [filterPPO, setFilterPPO] = useState<"" | "YES" | "NO">("");
+  const [filterMinStipend, setFilterMinStipend] = useState<string>("");
+
+  const clearFilters = () => {
+    setSearch("");
+    setFilterYear("");
+    setFilterCompany("");
+    setFilterMode("");
+    setFilterPPO("");
+    setFilterMinStipend("");
+  };
 
   // Quick Add State - Always visible with ALL fields INCLUDING student
   const [quickAddData, setQuickAddData] = useState<
@@ -272,11 +291,7 @@ const InternshipPage: React.FC = () => {
     setQuickAddError(null);
   };
 
-  const columns: {
-    key: keyof Internship;
-    label: string;
-    render?: (item: Internship) => React.ReactNode;
-  }[] = [
+  const columns: DataListColumn<Internship>[] = [
     { key: "id", label: "ID" },
     { key: "title", label: "Title" },
     {
@@ -290,6 +305,12 @@ const InternshipPage: React.FC = () => {
         }
         return "None";
       },
+      exportValue: (internship: Internship) =>
+        internship.students && internship.students.length > 0
+          ? internship.students
+              .map((si: any) => `${si.student.name} (${si.student.rollno})`)
+              .join(", ")
+          : "",
     },
     {
       key: "CompanyId",
@@ -297,6 +318,14 @@ const InternshipPage: React.FC = () => {
       render: (internship: Internship) => {
         const company = companies.find((c) => c.id === internship.CompanyId);
         return company ? company.name : "N/A";
+      },
+      exportValue: (internship: Internship) => {
+        const company = companies.find((c) => c.id === internship.CompanyId);
+        return company ? company.name : "";
+      },
+      sortAccessor: (internship: Internship) => {
+        const company = companies.find((c) => c.id === internship.CompanyId);
+        return company ? company.name : "";
       },
     },
     { key: "description", label: "Description" },
@@ -308,6 +337,7 @@ const InternshipPage: React.FC = () => {
       key: "PPO",
       label: "PPO",
       render: (internship: Internship) => (internship.PPO ? "Yes" : "No"),
+      exportValue: (internship: Internship) => (internship.PPO ? "Yes" : "No"),
     },
     { key: "CompletionCertificate", label: "Certificate" },
     {
@@ -319,6 +349,18 @@ const InternshipPage: React.FC = () => {
         );
         return mentor ? mentor.name : "N/A";
       },
+      exportValue: (internship: Internship) => {
+        const mentor = internalMentors.find(
+          (m) => m.id === internship.internalMentorId
+        );
+        return mentor ? mentor.name : "";
+      },
+      sortAccessor: (internship: Internship) => {
+        const mentor = internalMentors.find(
+          (m) => m.id === internship.internalMentorId
+        );
+        return mentor ? mentor.name : "";
+      },
     },
     {
       key: "externalMentorId",
@@ -329,9 +371,67 @@ const InternshipPage: React.FC = () => {
         );
         return mentor ? mentor.name : "N/A";
       },
+      exportValue: (internship: Internship) => {
+        const mentor = externalMentors.find(
+          (m) => m.id === internship.externalMentorId
+        );
+        return mentor ? mentor.name : "";
+      },
+      sortAccessor: (internship: Internship) => {
+        const mentor = externalMentors.find(
+          (m) => m.id === internship.externalMentorId
+        );
+        return mentor ? mentor.name : "";
+      },
     },
     { key: "Remarks", label: "Remarks" },
   ];
+
+  const filtered = internships.filter((i) => {
+    const q = search.trim().toLowerCase();
+    const comp =
+      companies.find((c) => c.id === i.CompanyId)?.name?.toLowerCase() || "";
+    const intMent =
+      internalMentors
+        .find((m) => m.id === i.internalMentorId)
+        ?.name?.toLowerCase() || "";
+    const extMent =
+      externalMentors
+        .find((m) => m.id === i.externalMentorId)
+        ?.name?.toLowerCase() || "";
+    const studentsText = (i.students || [])
+      .map((si: any) => `${si.student.name} (${si.student.rollno})`)
+      .join(", ")
+      .toLowerCase();
+
+    if (q) {
+      const hit =
+        String(i.id).includes(q) ||
+        i.title.toLowerCase().includes(q) ||
+        i.description.toLowerCase().includes(q) ||
+        i.academicYear.toLowerCase().includes(q) ||
+        String(i.duration).includes(q) ||
+        i.mode.toLowerCase().includes(q) ||
+        String(i.stipend).includes(q) ||
+        (i.PPO ? "yes" : "no").includes(q) ||
+        (i.CompletionCertificate || "").toLowerCase().includes(q) ||
+        (i.Remarks || "").toLowerCase().includes(q) ||
+        comp.includes(q) ||
+        intMent.includes(q) ||
+        extMent.includes(q) ||
+        studentsText.includes(q);
+      if (!hit) return false;
+    }
+    if (filterYear && i.academicYear !== filterYear) return false;
+    if (filterCompany && i.CompanyId !== filterCompany) return false;
+    if (filterMode && i.mode !== filterMode) return false;
+    if (filterPPO && (filterPPO === "YES") !== !!i.PPO) return false;
+    if (filterMinStipend) {
+      const min = Number(filterMinStipend);
+      if (!Number.isNaN(min) && i.stipend < min) return false;
+    }
+    return true;
+  });
 
   return (
     <Container fluid className="py-4">
@@ -350,7 +450,7 @@ const InternshipPage: React.FC = () => {
               }
             >
               <strong>
-                {editingId ? "✏️ Edit Internship" : "⚡ Add Internship"}
+                {editingId ? "Edit Internship" : "Add Internship"}
               </strong>{" "}
               - Fill all fields and submit
             </Card.Header>
@@ -751,23 +851,100 @@ const InternshipPage: React.FC = () => {
           <Card>
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">All Internships ({internships.length})</h5>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={fetchAllData}
-                  className="d-flex align-items-center"
-                >
-                  <ArrowRepeat size={16} className="me-1" /> Refresh
-                </Button>
+                <h5 className="mb-0">All Internships ({filtered.length})</h5>
+                <div className="d-flex flex-wrap align-items-center gap-2">
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 200 }}
+                  />
+                  <Form.Select
+                    size="sm"
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value as any)}
+                    style={{ maxWidth: 140 }}
+                  >
+                    <option value="">All Years</option>
+                    <option value="YEAR_2023_24">2023-24</option>
+                    <option value="YEAR_2024_25">2024-25</option>
+                    <option value="YEAR_2025_26">2025-26</option>
+                  </Form.Select>
+                  <Form.Select
+                    size="sm"
+                    value={filterCompany}
+                    onChange={(e) =>
+                      setFilterCompany(
+                        e.target.value ? Number(e.target.value) : ""
+                      )
+                    }
+                    style={{ maxWidth: 200 }}
+                  >
+                    <option value="">All Companies</option>
+                    {companies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Form.Select
+                    size="sm"
+                    value={filterMode}
+                    onChange={(e) => setFilterMode(e.target.value as any)}
+                    style={{ maxWidth: 140 }}
+                  >
+                    <option value="">All Modes</option>
+                    <option value="REMOTE">Remote</option>
+                    <option value="ONSITE">Onsite</option>
+                    <option value="PART_TIME">Part-time</option>
+                  </Form.Select>
+                  <Form.Select
+                    size="sm"
+                    value={filterPPO}
+                    onChange={(e) => setFilterPPO(e.target.value as any)}
+                    style={{ maxWidth: 120 }}
+                  >
+                    <option value="">PPO: Any</option>
+                    <option value="YES">Yes</option>
+                    <option value="NO">No</option>
+                  </Form.Select>
+                  <Form.Control
+                    size="sm"
+                    type="number"
+                    placeholder="Min stipend"
+                    value={filterMinStipend}
+                    onChange={(e) => setFilterMinStipend(e.target.value)}
+                    style={{ maxWidth: 140 }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="d-flex align-items-center"
+                    title="Clear all filters"
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={fetchAllData}
+                    className="d-flex align-items-center"
+                  >
+                    <ArrowRepeat size={16} className="me-1" /> Refresh
+                  </Button>
+                </div>
               </div>
 
               <DataList
-                data={internships}
+                data={filtered}
                 columns={columns}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 loading={loading}
+                exportFileName={`internships`}
               />
             </Card.Body>
           </Card>

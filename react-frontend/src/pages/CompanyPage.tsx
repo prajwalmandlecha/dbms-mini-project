@@ -18,6 +18,11 @@ const CompanyPage: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+
+  const clearFilters = () => {
+    setSearch("");
+  };
 
   // Quick Add State - Always visible
   const [quickAddData, setQuickAddData] = useState<Omit<Company, "id">>({
@@ -132,6 +137,17 @@ const CompanyPage: React.FC = () => {
     { key: "website", label: "Website" },
   ];
 
+  const filtered = companies.filter((c) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(c.id).includes(q) ||
+      c.name.toLowerCase().includes(q) ||
+      c.address.toLowerCase().includes(q) ||
+      (c.website || "").toLowerCase().includes(q)
+    );
+  });
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -148,10 +164,8 @@ const CompanyPage: React.FC = () => {
                 editingId ? "bg-info text-white" : "bg-primary text-white"
               }
             >
-              <strong>
-                {editingId ? "✏️ Edit Company" : "⚡ Add Company"}
-              </strong>{" "}
-              - Fill all fields and press Enter or click{" "}
+              <strong>{editingId ? "Edit Company" : "Add Company"}</strong> -
+              Fill all fields and press Enter or click{" "}
               {editingId ? "Update" : "Add"}
             </Card.Header>
             <Card.Body>
@@ -262,23 +276,44 @@ const CompanyPage: React.FC = () => {
           <Card>
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">All Companies ({companies.length})</h5>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={fetchCompanies}
-                  className="d-flex align-items-center"
-                >
-                  <ArrowRepeat size={16} className="me-1" /> Refresh
-                </Button>
+                <h5 className="mb-0">All Companies ({filtered.length})</h5>
+                <div className="d-flex align-items-center gap-2">
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 240 }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="d-flex align-items-center"
+                    title="Clear search filter"
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={fetchCompanies}
+                    className="d-flex align-items-center"
+                  >
+                    <ArrowRepeat size={16} className="me-1" /> Refresh
+                  </Button>
+                </div>
               </div>
 
               <DataList
-                data={companies}
+                data={filtered}
                 columns={columns}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 loading={loading}
+                title={undefined}
+                exportFileName={`companies`}
               />
             </Card.Body>
           </Card>

@@ -18,6 +18,11 @@ const DepartmentPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+
+  const clearFilters = () => {
+    setSearch("");
+  };
 
   // Quick Add State - Always visible
   const [quickAddData, setQuickAddData] = useState<Omit<Department, "id">>({
@@ -126,6 +131,12 @@ const DepartmentPage: React.FC = () => {
     { key: "name", label: "Name" },
   ];
 
+  const filtered = departments.filter((d) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return String(d.id).includes(q) || d.name.toLowerCase().includes(q);
+  });
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -143,7 +154,7 @@ const DepartmentPage: React.FC = () => {
               }
             >
               <strong>
-                {editingId ? "✏️ Edit Department" : "⚡ Add Department"}
+                {editingId ? "Edit Department" : "Add Department"}
               </strong>{" "}
               - Fill and press Enter or click {editingId ? "Update" : "Add"}
             </Card.Header>
@@ -228,23 +239,43 @@ const DepartmentPage: React.FC = () => {
           <Card>
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">All Departments ({departments.length})</h5>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={fetchDepartments}
-                  className="d-flex align-items-center"
-                >
-                  <ArrowRepeat size={16} className="me-1" /> Refresh
-                </Button>
+                <h5 className="mb-0">All Departments ({filtered.length})</h5>
+                <div className="d-flex align-items-center gap-2">
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 240 }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="d-flex align-items-center"
+                    title="Clear search filter"
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={fetchDepartments}
+                    className="d-flex align-items-center"
+                  >
+                    <ArrowRepeat size={16} className="me-1" /> Refresh
+                  </Button>
+                </div>
               </div>
 
               <DataList
-                data={departments}
+                data={filtered}
                 columns={columns}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 loading={loading}
+                exportFileName={`departments`}
               />
             </Card.Body>
           </Card>

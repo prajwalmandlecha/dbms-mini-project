@@ -10,7 +10,7 @@ import {
   Form,
 } from "react-bootstrap";
 import { ArrowRepeat, CheckCircle, XCircle } from "react-bootstrap-icons";
-import DataList from "../components/DataList";
+import DataList, { DataListColumn } from "../components/DataList";
 import { Student, Department } from "../types";
 import { studentService, departmentService } from "../services/api";
 
@@ -19,6 +19,20 @@ const StudentPage: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [filterYear, setFilterYear] = useState<"FE" | "SE" | "TE" | "BE" | "">(
+    ""
+  );
+  const [filterDiv, setFilterDiv] = useState<string>("");
+  const [filterDept, setFilterDept] = useState<number | "">("");
+
+  const clearFilters = () => {
+    setSearch("");
+    setFilterYear("");
+    setFilterDiv("");
+    setFilterDept("");
+  };
+
   const [quickAddData, setQuickAddData] = useState<
     Omit<Student, "id" | "department">
   >({
@@ -169,11 +183,7 @@ const StudentPage: React.FC = () => {
     setQuickAddError(null);
   };
 
-  const columns: {
-    key: keyof Student;
-    label: string;
-    render?: (item: Student) => React.ReactNode;
-  }[] = [
+  const columns: DataListColumn<Student>[] = [
     { key: "id", label: "ID" },
     { key: "rollno", label: "Roll No" },
     { key: "name", label: "Name" },
@@ -186,10 +196,41 @@ const StudentPage: React.FC = () => {
         const dept = departments.find((d) => d.id === student.departmentId);
         return dept ? dept.name : "N/A";
       },
+      exportValue: (student: Student) => {
+        const dept = departments.find((d) => d.id === student.departmentId);
+        return dept ? dept.name : "";
+      },
+      sortAccessor: (student: Student) => {
+        const dept = departments.find((d) => d.id === student.departmentId);
+        return dept ? dept.name : "";
+      },
     },
     { key: "mobileNo", label: "Mobile" },
     { key: "email", label: "Email" },
   ];
+
+  const filtered = students.filter((s) => {
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const deptName =
+        departments.find((d) => d.id === s.departmentId)?.name?.toLowerCase() ||
+        "";
+      const hit =
+        String(s.id).includes(q) ||
+        s.rollno.toLowerCase().includes(q) ||
+        s.name.toLowerCase().includes(q) ||
+        s.div.toLowerCase().includes(q) ||
+        s.mobileNo.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        deptName.includes(q);
+      if (!hit) return false;
+    }
+    if (filterYear && s.year !== filterYear) return false;
+    if (filterDiv && s.div.toLowerCase() !== filterDiv.trim().toLowerCase())
+      return false;
+    if (filterDept && s.departmentId !== filterDept) return false;
+    return true;
+  });
 
   return (
     <Container fluid className="py-4">
@@ -207,10 +248,8 @@ const StudentPage: React.FC = () => {
                 editingId ? "bg-info text-white" : "bg-primary text-white"
               }
             >
-              <strong>
-                {editingId ? "✏️ Edit Student" : "⚡ Add Student"}
-              </strong>{" "}
-              - Fill all fields and press Enter or click{" "}
+              <strong>{editingId ? "Edit Student" : "Add Student"}</strong> -
+              Fill all fields and press Enter or click{" "}
               {editingId ? "Update" : "Add"} to quickly{" "}
               {editingId ? "update" : "add"} students
             </Card.Header>
@@ -382,23 +421,80 @@ const StudentPage: React.FC = () => {
           <Card>
             <Card.Body>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">All Students ({students.length})</h5>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={fetchStudentsAndDepartments}
-                  className="d-flex align-items-center"
-                >
-                  <ArrowRepeat size={16} className="me-1" /> Refresh
-                </Button>
+                <h5 className="mb-0">All Students ({filtered.length})</h5>
+                <div className="d-flex flex-wrap align-items-center gap-2">
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 200 }}
+                  />
+                  <Form.Select
+                    size="sm"
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value as any)}
+                    style={{ maxWidth: 120 }}
+                  >
+                    <option value="">All Years</option>
+                    <option value="FE">FE</option>
+                    <option value="SE">SE</option>
+                    <option value="TE">TE</option>
+                    <option value="BE">BE</option>
+                  </Form.Select>
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Div"
+                    value={filterDiv}
+                    onChange={(e) => setFilterDiv(e.target.value)}
+                    style={{ maxWidth: 80 }}
+                  />
+                  <Form.Select
+                    size="sm"
+                    value={filterDept}
+                    onChange={(e) =>
+                      setFilterDept(
+                        e.target.value ? Number(e.target.value) : ""
+                      )
+                    }
+                    style={{ maxWidth: 200 }}
+                  >
+                    <option value="">All Departments</option>
+                    {departments.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="d-flex align-items-center"
+                    title="Clear all filters"
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={fetchStudentsAndDepartments}
+                    className="d-flex align-items-center"
+                  >
+                    <ArrowRepeat size={16} className="me-1" /> Refresh
+                  </Button>
+                </div>
               </div>
 
               <DataList
-                data={students}
+                data={filtered}
                 columns={columns}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 loading={loading}
+                exportFileName={`students`}
               />
             </Card.Body>
           </Card>

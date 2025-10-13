@@ -24,6 +24,11 @@ const MentorPage: React.FC = () => {
   const [mentorType, setMentorType] = useState<"internal" | "external">(
     "internal"
   );
+  const [search, setSearch] = useState<string>("");
+
+  const clearFilters = () => {
+    setSearch("");
+  };
 
   // Quick Add State - Always visible
   const [quickAddData, setQuickAddData] = useState<
@@ -168,6 +173,22 @@ const MentorPage: React.FC = () => {
     { key: "mobileNo", label: "Mobile No" },
   ];
 
+  const filterMentors = <
+    T extends { id: number; name: string; email: string; mobileNo: string }
+  >(
+    list: T[]
+  ) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (m) =>
+        String(m.id).includes(q) ||
+        m.name.toLowerCase().includes(q) ||
+        m.email.toLowerCase().includes(q) ||
+        m.mobileNo.toLowerCase().includes(q)
+    );
+  };
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -186,7 +207,7 @@ const MentorPage: React.FC = () => {
             >
               <span>
                 <strong>
-                  {editingMentor ? "✏️ Edit" : "⚡ Add"}{" "}
+                  {editingMentor ? "Edit" : "Add"}{" "}
                   {mentorType === "internal" ? "Internal" : "External"} Mentor
                 </strong>{" "}
                 - Fill all fields and press Enter or click{" "}
@@ -323,7 +344,26 @@ const MentorPage: React.FC = () => {
 
           <Card>
             <Card.Body>
-              <div className="d-flex justify-content-end mb-3">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex align-items-center gap-2">
+                  <Form.Control
+                    size="sm"
+                    type="text"
+                    placeholder="Search mentors..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ maxWidth: 260 }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="d-flex align-items-center"
+                    title="Clear search filter"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
                 <Button
                   variant="outline-secondary"
                   size="sm"
@@ -342,22 +382,34 @@ const MentorPage: React.FC = () => {
                   setMentorType(key as "internal" | "external")
                 }
               >
-                <Tab eventKey="internal" title="Internal Mentors">
+                <Tab
+                  eventKey="internal"
+                  title={`Internal Mentors (${
+                    filterMentors(internalMentors).length
+                  })`}
+                >
                   <DataList
-                    data={internalMentors}
+                    data={filterMentors(internalMentors)}
                     columns={columns}
                     onEdit={(mentor) => handleEdit(mentor, "internal")}
                     onDelete={(mentor) => handleDelete(mentor, "internal")}
                     loading={loading}
+                    exportFileName={`internal-mentors`}
                   />
                 </Tab>
-                <Tab eventKey="external" title="External Mentors">
+                <Tab
+                  eventKey="external"
+                  title={`External Mentors (${
+                    filterMentors(externalMentors).length
+                  })`}
+                >
                   <DataList
-                    data={externalMentors}
+                    data={filterMentors(externalMentors)}
                     columns={columns}
                     onEdit={(mentor) => handleEdit(mentor, "external")}
                     onDelete={(mentor) => handleDelete(mentor, "external")}
                     loading={loading}
+                    exportFileName={`external-mentors`}
                   />
                 </Tab>
               </Tabs>
